@@ -21,6 +21,7 @@
 
 /*! \file periodic-uplink/SAML21/main.c */
 
+#include <stdio.h>
 #include "utilities.h"
 #include "board.h"
 #include "gpio.h"
@@ -245,12 +246,19 @@ int main( void )
     TimerSetValue( &LedBeaconTimer, 5000 );
 
     const Version_t appVersion = { .Fields.Major = 1, .Fields.Minor = 0, .Fields.Revision = 0 };
-    const Version_t gitHubVersion = { .Fields.Major = 4, .Fields.Minor = 4, .Fields.Revision = 2 };
+    const Version_t gitHubVersion = { .Fields.Major = 4, .Fields.Minor = 4, .Fields.Revision = 3 };
     DisplayAppInfo( "periodic-uplink-lpp", 
                     &appVersion,
                     &gitHubVersion );
 
-    LmHandlerInit( &LmHandlerCallbacks, &LmHandlerParams );
+    if ( LmHandlerInit( &LmHandlerCallbacks, &LmHandlerParams ) != LORAMAC_HANDLER_SUCCESS )
+    {
+        printf( "LoRaMac wasn't properly initialized" );
+        // Fatal error, endless loop.
+        while ( 1 )
+        {
+        }
+    }
 
     // The LoRa-Alliance Compliance protocol package should always be
     // initialized and activated.

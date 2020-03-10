@@ -123,7 +123,11 @@ static void OnTxData( LmHandlerTxParams_t* params );
 static void OnRxData( LmHandlerAppData_t* appData, LmHandlerRxParams_t* params );
 static void OnClassChange( DeviceClass_t deviceClass );
 static void OnBeaconStatusChange( LoRaMAcHandlerBeaconParams_t* params );
+#if( LMH_SYS_TIME_UPDATE_NEW_API == 1 )
+static void OnSysTimeUpdate( bool isSynchronized, int32_t timeCorrection );
+#else
 static void OnSysTimeUpdate( void );
+#endif
 #if( FRAG_DECODER_FILE_HANDLING_NEW_API == 1 )
 static uint8_t FragDecoderWrite( uint32_t addr, uint8_t *data, uint32_t size );
 static uint8_t FragDecoderRead( uint32_t addr, uint8_t *data, uint32_t size );
@@ -276,12 +280,19 @@ int main( void )
     TimerSetValue( &Led1Timer, 100 );
 
     const Version_t appVersion = { .Fields.Major = 1, .Fields.Minor = 0, .Fields.Revision = 0 };
-    const Version_t gitHubVersion = { .Fields.Major = 4, .Fields.Minor = 4, .Fields.Revision = 2 };
+    const Version_t gitHubVersion = { .Fields.Major = 4, .Fields.Minor = 4, .Fields.Revision = 3 };
     DisplayAppInfo( "fuota-test-01", 
                     &appVersion,
                     &gitHubVersion );
 
-    LmHandlerInit( &LmHandlerCallbacks, &LmHandlerParams );
+    if ( LmHandlerInit( &LmHandlerCallbacks, &LmHandlerParams ) != LORAMAC_HANDLER_SUCCESS )
+    {
+        printf( "LoRaMac wasn't properly initialized" );
+        // Fatal error, endless loop.
+        while ( 1 )
+        {
+        }
+    }
 
     // The LoRa-Alliance Compliance protocol package should always be
     // initialized and activated.
@@ -428,10 +439,17 @@ static void OnBeaconStatusChange( LoRaMAcHandlerBeaconParams_t* params )
     DisplayBeaconUpdate( params );
 }
 
+#if( LMH_SYS_TIME_UPDATE_NEW_API == 1 )
+static void OnSysTimeUpdate( bool isSynchronized, int32_t timeCorrection )
+{
+    IsClockSynched = isSynchronized;
+}
+#else
 static void OnSysTimeUpdate( void )
 {
     IsClockSynched = true;
 }
+#endif
 
 #if( FRAG_DECODER_FILE_HANDLING_NEW_API == 1 )
 static uint8_t FragDecoderWrite( uint32_t addr, uint8_t *data, uint32_t size )

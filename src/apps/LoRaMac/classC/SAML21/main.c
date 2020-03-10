@@ -964,11 +964,19 @@ int main( void )
     macCallbacks.NvmContextChange = NvmCtxMgmtEvent;
     macCallbacks.MacProcessNotify = OnMacProcessNotify;
 
-    LoRaMacInitialization( &macPrimitives, &macCallbacks, ACTIVE_REGION );
+    status = LoRaMacInitialization( &macPrimitives, &macCallbacks, ACTIVE_REGION );
+    if ( status != LORAMAC_STATUS_OK )
+    {
+        printf( "LoRaMac wasn't properly initialized, error: %s", MacStatusStrings[status] );
+        // Fatal error, endless loop.
+        while ( 1 )
+        {
+        }
+    }
 
     DeviceState = DEVICE_STATE_RESTORE;
 
-    printf( "###### ===== ClassC demo application v1.0.RC1 ==== ######\r\n\r\n" );
+    printf( "###### ===== ClassC demo application v1.0.0 ==== ######\r\n\r\n" );
 
     while( 1 )
     {
