@@ -37,6 +37,11 @@
 #ifndef __REGION_KR920_H__
 #define __REGION_KR920_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include "region/Region.h"
 
 /*!
@@ -286,14 +291,9 @@ static const uint8_t DataratesKR920[]  = { 12, 11, 10,  9,  8,  7 };
 static const uint32_t BandwidthsKR920[] = { 125000, 125000, 125000, 125000, 125000, 125000 };
 
 /*!
- * Maximum payload with respect to the datarate index. Can operate with and without a repeater.
+ * Maximum payload with respect to the datarate index.
  */
 static const uint8_t MaxPayloadOfDatarateKR920[] = { 51, 51, 51, 115, 242, 242 };
-
-/*!
- * Maximum payload with respect to the datarate index. Can operate with repeater.
- */
-static const uint8_t MaxPayloadOfDatarateRepeaterKR920[] = { 51, 51, 51, 115, 222, 222 };
 
 /*!
  * \brief The function gets a value of a specific phy attribute.
@@ -517,5 +517,9 @@ uint8_t RegionKR920ApplyDrOffset( uint8_t downlinkDwellTime, int8_t dr, int8_t d
  void RegionKR920RxBeaconSetup( RxBeaconSetup_t* rxBeaconSetup, uint8_t* outDr );
 
 /*! \} defgroup REGIONKR920 */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __REGION_KR920_H__

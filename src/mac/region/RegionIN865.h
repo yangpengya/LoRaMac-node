@@ -37,6 +37,11 @@
 #ifndef __REGION_IN865_H__
 #define __REGION_IN865_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include "region/Region.h"
 
 /*!
@@ -271,14 +276,9 @@ static const uint8_t DataratesIN865[]  = { 12, 11, 10,  9,  8,  7,  7, 50 };
 static const uint32_t BandwidthsIN865[] = { 125000, 125000, 125000, 125000, 125000, 125000, 250000, 0 };
 
 /*!
- * Maximum payload with respect to the datarate index. Cannot operate with repeater.
+ * Maximum payload with respect to the datarate index.
  */
 static const uint8_t MaxPayloadOfDatarateIN865[] = { 51, 51, 51, 115, 242, 242, 242, 242 };
-
-/*!
- * Maximum payload with respect to the datarate index. Can operate with repeater.
- */
-static const uint8_t MaxPayloadOfDatarateRepeaterIN865[] = { 51, 51, 51, 115, 222, 222, 222, 222 };
 
 /*!
  * Effective datarate offsets for receive window 1.
@@ -507,5 +507,9 @@ uint8_t RegionIN865ApplyDrOffset( uint8_t downlinkDwellTime, int8_t dr, int8_t d
  void RegionIN865RxBeaconSetup( RxBeaconSetup_t* rxBeaconSetup, uint8_t* outDr );
 
 /*! \} defgroup REGIONIN865 */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __REGION_IN865_H__

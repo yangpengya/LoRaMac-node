@@ -37,6 +37,11 @@
 #ifndef __REGION_AU915_H__
 #define __REGION_AU915_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include "region/Region.h"
 
 /*!
@@ -226,7 +231,7 @@
 /*!
  * Datarate of the beacon channel
  */
-#define AU915_BEACON_CHANNEL_DR                     DR_10
+#define AU915_BEACON_CHANNEL_DR                     DR_8
 
 /*!
  * Bandwith of the beacon channel
@@ -236,7 +241,7 @@
 /*!
  * Ping slot channel datarate
  */
-#define AU915_PING_SLOT_CHANNEL_DR                  DR_10
+#define AU915_PING_SLOT_CHANNEL_DR                  DR_8
 
 /*!
  * LoRaMac maximum number of bands
@@ -289,30 +294,16 @@ static const int8_t DatarateOffsetsAU915[7][6] =
 };
 
 /*!
- * Maximum payload with respect to the datarate index. Cannot operate with repeater.
+ * Maximum payload with respect to the datarate index.
  * The table is valid for the dwell time configuration of 0 for uplinks.
  */
 static const uint8_t MaxPayloadOfDatarateDwell0AU915[] = { 51, 51, 51, 115, 242, 242, 242, 0, 53, 129, 242, 242, 242, 242 };
 
 /*!
- * Maximum payload with respect to the datarate index. Can operate with repeater.
- * The table is valid for the dwell time configuration of 0 for uplinks. The table provides
- * repeater support.
- */
-static const uint8_t MaxPayloadOfDatarateRepeaterDwell0AU915[] = { 51, 51, 51, 115, 222, 222, 222, 0, 33, 109, 222, 222, 222, 222 };
-
-/*!
- * Maximum payload with respect to the datarate index. Cannot operate with repeater.
+ * Maximum payload with respect to the datarate index.
  * The table is valid for the dwell time configuration of 1 for uplinks.
  */
 static const uint8_t MaxPayloadOfDatarateDwell1AU915[] = { 0, 0, 11, 53, 125, 242, 242, 0, 53, 129, 242, 242, 242, 242 };
-
-/*!
- * Maximum payload with respect to the datarate index. Can operate with repeater.
- * The table is valid for the dwell time configuration of 1 for uplinks. The table provides
- * repeater support.
- */
-static const uint8_t MaxPayloadOfDatarateRepeaterDwell1AU915[] = { 0, 0, 11, 53, 125, 242, 242, 0, 33, 109, 222, 222, 222, 222 };
 
 /*!
  * \brief The function gets a value of a specific phy attribute.
@@ -536,5 +527,9 @@ uint8_t RegionAU915ApplyDrOffset( uint8_t downlinkDwellTime, int8_t dr, int8_t d
  void RegionAU915RxBeaconSetup( RxBeaconSetup_t* rxBeaconSetup, uint8_t* outDr );
 
 /*! \} defgroup REGIONAU915 */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __REGION_AU915_H__

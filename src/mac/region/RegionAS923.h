@@ -37,6 +37,11 @@
 #ifndef __REGION_AS923_H__
 #define __REGION_AS923_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include "region/Region.h"
 
 /*!
@@ -291,27 +296,20 @@ static const uint8_t DataratesAS923[]  = { 12, 11, 10,  9,  8,  7, 7, 50 };
 static const uint32_t BandwidthsAS923[] = { 125000, 125000, 125000, 125000, 125000, 125000, 250000, 0 };
 
 /*!
- * Maximum payload with respect to the datarate index. Cannot operate with repeater.
+ * Maximum payload with respect to the datarate index.
  * The table is valid for the dwell time configuration of 0 for uplinks and downlinks.
  */
 static const uint8_t MaxPayloadOfDatarateDwell0AS923[] = { 51, 51, 51, 115, 242, 242, 242, 242 };
 
 /*!
- * Maximum payload with respect to the datarate index. Can operate with repeater.
- * The table is valid for the dwell time configuration of 0 for uplinks and downlinks. The table provides
- * repeater support.
- */
-static const uint8_t MaxPayloadOfDatarateRepeaterDwell0AS923[] = { 51, 51, 51, 115, 222, 222, 222, 222 };
-
-/*!
- * Maximum payload with respect to the datarate index. Can operate with and without repeater.
- * The table proides repeater support. The table is only valid for uplinks.
+ * Maximum payload with respect to the datarate index.
+ * The table is only valid for uplinks.
  */
 static const uint8_t MaxPayloadOfDatarateDwell1UpAS923[] = { 0, 0, 11, 53, 125, 242, 242, 242 };
 
 /*!
- * Maximum payload with respect to the datarate index. Can operate with and without repeater.
- * The table proides repeater support. The table is only valid for downlinks.
+ * Maximum payload with respect to the datarate index.
+ * The table is only valid for downlinks.
  */
 static const uint8_t MaxPayloadOfDatarateDwell1DownAS923[] = { 0, 0, 11, 53, 126, 242, 242, 242 };
 
@@ -542,5 +540,9 @@ uint8_t RegionAS923ApplyDrOffset( uint8_t downlinkDwellTime, int8_t dr, int8_t d
  void RegionAS923RxBeaconSetup( RxBeaconSetup_t* rxBeaconSetup, uint8_t* outDr );
 
 /*! \} defgroup REGIONAS923 */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __REGION_AS923_H__

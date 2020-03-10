@@ -121,6 +121,11 @@
 #ifndef __LORAMAC_H__
 #define __LORAMAC_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <stdint.h>
 #include <stdbool.h>
 #include "utilities.h"
@@ -158,7 +163,7 @@
 /*!
  * FRMPayload overhead to be used when setting the Radio.SetMaxPayloadLength
  * in RxWindowSetup function.
- * Maximum PHYPayload = MaxPayloadOfDatarate/MaxPayloadOfDatarateRepeater + LORA_MAC_FRMPAYLOAD_OVERHEAD
+ * Maximum PHYPayload = MaxPayloadOfDatarate + LORA_MAC_FRMPAYLOAD_OVERHEAD
  */
 #define LORA_MAC_FRMPAYLOAD_OVERHEAD                13 // MHDR(1) + FHDR(7) + Port(1) + MIC(4)
 
@@ -440,10 +445,6 @@ typedef struct sLoRaMacParams
      * Antenna gain of the node
      */
     float AntennaGain;
-    /*!
-     * Indicates if the node supports repeaters
-     */
-    bool RepeaterSupport;
 }LoRaMacParams_t;
 
 /*!
@@ -1238,7 +1239,6 @@ typedef struct sMlmeIndication
  * \ref MIB_MC_APP_S_KEY_3                       | NO  | YES
  * \ref MIB_MC_NWK_S_KEY_3                       | NO  | YES
  * \ref MIB_PUBLIC_NETWORK                       | YES | YES
- * \ref MIB_REPEATER_SUPPORT                     | YES | YES
  * \ref MIB_CHANNELS                             | YES | NO
  * \ref MIB_RX2_CHANNEL                          | YES | YES
  * \ref MIB_RX2_DFAULT_CHANNEL                   | YES | YES
@@ -1273,7 +1273,8 @@ typedef struct sMlmeIndication
  * \ref MIB_ANTENNA_GAIN                         | YES | YES
  * \ref MIB_DEFAULT_ANTENNA_GAIN                 | YES | YES
  * \ref MIB_NVM_CTXS                             | YES | YES
- * \ref MIB_ABP_LORAWAN_VERSION                  | YES | YES
+ * \ref MIB_ABP_LORAWAN_VERSION                  | NO  | YES
+ * \ref MIB_LORAWAN_VERSION                      | YES | NO
  *
  * The following table provides links to the function implementations of the
  * related MIB primitives:
@@ -1470,14 +1471,6 @@ typedef enum eMib
      */
     MIB_PUBLIC_NETWORK,
     /*!
-     * Support the operation with repeaters
-     *
-     * LoRaWAN Regional Parameters V1.0.2rB
-     *
-     * [true: repeater support enabled, false: repeater support disabled]
-     */
-    MIB_REPEATER_SUPPORT,
-    /*!
      * Communication channels. A get request will return a
      * pointer which references the first entry of the channel list. The
      * list is of size LORA_MAX_NB_CHANNELS
@@ -1630,6 +1623,10 @@ typedef enum eMib
      * LoRaWAN MAC layer operating version when activated by ABP.
      */
     MIB_ABP_LORAWAN_VERSION,
+    /*!
+     * LoRaWAN MAC and regional parameter version.
+     */
+    MIB_LORAWAN_VERSION,
     /*!
      * Beacon interval in ms
      */
@@ -1876,12 +1873,6 @@ typedef union uMibParam
      */
     bool EnablePublicNetwork;
     /*!
-     * Enable or disable repeater support
-     *
-     * Related MIB type: \ref MIB_REPEATER_SUPPORT
-     */
-    bool EnableRepeaterSupport;
-    /*!
      * LoRaWAN Channel
      *
      * Related MIB type: \ref MIB_CHANNELS
@@ -2025,6 +2016,16 @@ typedef union uMibParam
      * Related MIB type: \ref MIB_ABP_LORAWAN_VERSION
      */
     Version_t AbpLrWanVersion;
+    /*
+     * LoRaWAN MAC regional parameter version.
+     *
+     * Related MIB type: \ref MIB_LORAWAN_VERSION
+     */
+    struct sLrWanVersion
+    {
+        Version_t LoRaWan;
+        Version_t LoRaWanRegion;
+    }LrWanVersion;
     /*!
      * Beacon interval in ms
      *
@@ -2458,6 +2459,30 @@ void LoRaMacProcess( void );
 
 /*!
  * \brief   Queries the LoRaMAC if it is possible to send the next frame with
+ *          a given datarate.
+ *
+ * \param   [IN] datarate - The datarate which should be used for the next uplink. Please
+ *                          note that in case ADR is enabled, the function will utilize
+ *                          the datarate defined by ADR and will disregard this input parameter.
+ *
+ * \param   [OUT] time    - The remaining time for which the next uplink tranmission
+ *                          is restricted. Will be 0, if the MAC is able to perform
+ *                          a transmission without duty cycle restriction resp. delay.
+ *
+ * \retval  LoRaMacStatus_t Status of the operation. When the parameters are
+ *          not valid, the function returns \ref LORAMAC_STATUS_PARAMETER_INVALID.
+ *          In case the MAC is limited due to a duty cycle restriction, the function
+ *          returns \ref LORAMAC_STATUS_DUTYCYCLE_RESTRICTED. If the MAC has not found
+ *          a valid channel for the given datarate, it returns \ref LORAMAC_STATUS_NO_CHANNEL_FOUND.
+ *          In the latter case, this function does not reenable default channels
+ *          automatically.
+ *          In case there is no delay due to the duty cycle,
+ *          the function returns \ref LORAMAC_STATUS_OK.
+ */
+LoRaMacStatus_t LoRaMacQueryNextTxDelay( int8_t datarate, TimerTime_t* time );
+
+/*!
+ * \brief   Queries the LoRaMAC if it is possible to send the next frame with
  *          a given application data payload size. The LoRaMAC takes scheduled
  *          MAC commands into account and reports, when the frame can be send or not.
  *
@@ -2698,11 +2723,27 @@ LoRaMacStatus_t LoRaMacMlmeRequest( MlmeReq_t* mlmeRequest );
 LoRaMacStatus_t LoRaMacMcpsRequest( McpsReq_t* mcpsRequest );
 
 /*!
+ * \brief   LoRaMAC deinitialization
+ *
+ * \details This function stops the timers, re-initializes MAC & regional parameters to default
+ *          and sets radio into sleep state.
+ *
+ * \retval  LoRaMacStatus_t Status of the operation. Possible returns are:
+ *          \ref LORAMAC_STATUS_OK,
+ *          \ref LORAMAC_STATUS_BUSY
+ */
+LoRaMacStatus_t LoRaMacDeInitialization( void );
+
+/*!
  * Automatically add the Region.h file at the end of LoRaMac.h file.
  * This is required because Region.h uses definitions from LoRaMac.h
  */
 #include "region/Region.h"
 
 /*! \} defgroup LORAMAC */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __LORAMAC_H__
